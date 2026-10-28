@@ -59,6 +59,7 @@ class GitHubWebhook:
             return self._format_message(NotificationMessage.REVIEW_CHANGES_REQUESTED, user, pr)
 
         if state == GitHubReviewState.COMMENTED:
+            _logger.info("Comment: '%s'", self.payload["comment"]["body"])
             return self._format_message(NotificationMessage.REVIEW_COMMENTED, user, pr)
 
         return None
