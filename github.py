@@ -1,8 +1,11 @@
 import hashlib
 import hmac
 import json
+import logging
 
 from consts import GitHubAction, GitHubEvent, GitHubReviewState, NotificationMessage
+
+_logger = logging.getLogger(__name__)
 
 
 class GitHubWebhook:
@@ -31,6 +34,7 @@ class GitHubWebhook:
 
     def _pull_request(self) -> str | None:
         pr, user, action = self.payload["pull_request"], self.payload["sender"], self.payload["action"]
+        _logger.info("Action: %s", action)
 
         if action == GitHubAction.OPENED:
             return self._format_message(NotificationMessage.PR_OPENED, user, pr)
@@ -46,15 +50,13 @@ class GitHubWebhook:
         state = review["state"]
         user = review.get("user") or self.payload["sender"]
         pr = self.payload["pull_request"]
+        _logger.info("State: %s", state)
 
         if state == GitHubReviewState.APPROVED:
             return self._format_message(NotificationMessage.REVIEW_APPROVED, user, pr)
 
         if state == GitHubReviewState.CHANGES_REQUESTED:
             return self._format_message(NotificationMessage.REVIEW_CHANGES_REQUESTED, user, pr)
-
-        if state == GitHubReviewState.COMMENTED:
-            return self._format_message(NotificationMessage.REVIEW_COMMENTED, user, pr)
 
         return None
 

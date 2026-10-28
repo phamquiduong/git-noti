@@ -7,7 +7,7 @@ from notification import DiscordNotification, Notification
 from settings import DISCORD_WEBHOOK_URL, GITHUB_WEBHOOK_SECRET, setup_logging
 
 setup_logging()
-_logger = logging.getLogger("github-discord")
+_logger = logging.getLogger(__name__)
 
 _notification = Notification(
     DiscordNotification(DISCORD_WEBHOOK_URL),
@@ -28,17 +28,16 @@ async def github_webhook(
     event: str | None = Header(default=None, alias="X-GitHub-Event"),
     delivery: str | None = Header(default=None, alias="X-GitHub-Delivery"),
 ) -> dict:
-    _logger.info("GitHub webhook received", extra={"event": event, "delivery": delivery})
     body = await request.body()
+    _logger.info("GitHub webhook received: event=%s delivery=%s", event, delivery)
 
     webhook = GitHubWebhook(secret=GITHUB_WEBHOOK_SECRET, body=body, signature=signature, event=event)
-    _logger.info("GitHub webhook verified", extra={"event": event, "delivery": delivery})
+    _logger.info("GitHub webhook verified")
 
     message = webhook.build_message()
 
     if message:
-        _logger.info("Discord notification prepared", extra={"event": event, "delivery": delivery})
         _notification.send_message(message)
-        _logger.info("Discord notification sent", extra={"event": event, "delivery": delivery})
+        _logger.info("Notification sent")
 
     return {"status": "success", "delivery": delivery}
