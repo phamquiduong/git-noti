@@ -36,8 +36,9 @@ async def github_webhook(
 
     message = webhook.build_message()
 
-    _logger.info("Discord notification prepared", extra={"event": event, "delivery": delivery})
-    _notification.send_message(message)
-    _logger.info("Discord notification sent", extra={"event": event, "delivery": delivery})
+    if message:
+        _logger.info("Discord notification prepared", extra={"event": event, "delivery": delivery})
+        _notification.send_message(message)
+        _logger.info("Discord notification sent", extra={"event": event, "delivery": delivery})
 
     return {"status": "success", "delivery": delivery}

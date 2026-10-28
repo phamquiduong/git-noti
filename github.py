@@ -17,7 +17,7 @@ class GitHubWebhook:
     ###########################################################
     #               Build message function
     ###########################################################
-    def build_message(self) -> str:
+    def build_message(self) -> str | None:
         if self.event == GitHubEvent.PULL_REQUEST:
             return self._pull_request()
 
@@ -27,9 +27,9 @@ class GitHubWebhook:
         if self.event == GitHubEvent.ISSUE_COMMENT:
             return self._issue_comment()
 
-        return f"Unhandled GitHub event: {self.event}, action: {self.payload.get('action')}"
+        return None
 
-    def _pull_request(self) -> str:
+    def _pull_request(self) -> str | None:
         pr, user, action = self.payload["pull_request"], self.payload["sender"], self.payload["action"]
 
         if action == GitHubAction.OPENED:
@@ -39,9 +39,9 @@ class GitHubWebhook:
             template = NotificationMessage.PR_MERGED if pr["merged"] else NotificationMessage.PR_CLOSED
             return self._format_message(template, user, pr)
 
-        return f"Unhandled pull request action: {action}"
+        return None
 
-    def _pull_request_review(self) -> str:
+    def _pull_request_review(self) -> str | None:
         review = self.payload["review"]
         state = review["state"]
         user = review.get("user") or self.payload["sender"]
@@ -56,16 +56,16 @@ class GitHubWebhook:
         if state == GitHubReviewState.COMMENTED:
             return self._format_message(NotificationMessage.REVIEW_COMMENTED, user, pr)
 
-        return f"Unhandled review state: {state}"
+        return None
 
-    def _issue_comment(self) -> str:
+    def _issue_comment(self) -> str | None:
         issue, comment = self.payload["issue"], self.payload["comment"]
         user = comment["user"]
 
         if issue.get("pull_request"):
             return self._format_message(NotificationMessage.PR_COMMENTED, user, issue)
 
-        return f"Unhandled issue comment: #{issue['number']} is not a pull request"
+        return None
 
     ###########################################################
     #                       Utils
