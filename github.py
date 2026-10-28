@@ -58,6 +58,9 @@ class GitHubWebhook:
         if state == GitHubReviewState.CHANGES_REQUESTED:
             return self._format_message(NotificationMessage.REVIEW_CHANGES_REQUESTED, user, pr)
 
+        if state == GitHubReviewState.COMMENTED:
+            return self._format_message(NotificationMessage.REVIEW_COMMENTED, user, pr)
+
         return None
 
     def _issue_comment(self) -> str | None:
