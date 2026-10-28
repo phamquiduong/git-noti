@@ -74,10 +74,6 @@ def build_message(event: str, payload: dict) -> str | None:
             link = f"[#{issue['number']} — {issue['title']}]({issue['html_url']})"
             return f"💬 {github_user(comment.get('user'))} commented on {link}"
 
-    if event == "pull_request_review_comment" and pr and action == "created":
-        comment = payload.get("comment") or {}
-        return f"💬 {github_user(comment.get('user'))} commented on {pull_request_link(pr)}"
-
     return None
 
 
