@@ -7,8 +7,8 @@ from fastapi import FastAPI, Header, HTTPException, Request
 
 # ==================== CONFIG ====================
 
-GITHUB_WEBHOOK_SECRET = "your-github-webhook-secret"
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/..."
+GITHUB_WEBHOOK_SECRET = "rikWFDZC5cYevpehVh1QtLUP0GTXYh"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1564936561559207936/xDkXVYfiyY2A-AavRTDpJl_Jbgvym1v0nBoArxGmr9AyXyg-Co_7BFcVbBM68vBfw0MW"
 
 # =================================================
 
