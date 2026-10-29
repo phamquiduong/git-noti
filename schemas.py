@@ -43,7 +43,9 @@ class PullRequestReview(BaseModel):
 
 
 class Issue(BaseModel):
-    pull_request: PullRequest | None = None
+    number: int
+    html_url: str
+    title: str
 
 
 class Comment(BaseModel):
