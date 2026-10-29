@@ -48,21 +48,21 @@ class NotificationProvider(ABC):
 
         if review.state == GitHubReviewState.APPROVED:
             state_msg = self._build_review_message("approved", review)
-            return f"✅  {sender_msg} {state_msg} {pr_msg}"
+            return f"✅  {sender_msg} {state_msg} on {pr_msg}"
 
         if review.state == GitHubReviewState.CHANGES_REQUESTED:
             state_msg = self._build_review_message("requested changes", review)
-            return f"🔄  {sender_msg} {state_msg} {pr_msg}"
+            return f"🔄  {sender_msg} {state_msg} on {pr_msg}"
 
         if GitHubReviewState.COMMENTED:
             state_msg = self._build_review_message("commented", review)
-            return f"💬  {sender_msg} {state_msg} {pr_msg}"
+            return f"💬  {sender_msg} {state_msg} on {pr_msg}"
 
     def _build_message_issue_comment(self, event: EventIssueComment) -> str | None:
         sender_msg = self._build_sender_message(event.sender)
         issue_msg = self._build_issue_message(event.issue)
         comment_msg = self._build_comment_message(event.comment)
-        return f"💬  {sender_msg} {comment_msg} {issue_msg}"
+        return f"💬  {sender_msg} {comment_msg} on {issue_msg}"
 
     @staticmethod
     @abstractmethod
