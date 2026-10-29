@@ -34,7 +34,7 @@ class PullRequest(BaseModel):
     number: int
     title: str
     html_url: str
-    merged: bool
+    merged: bool = False
 
 
 class PullRequestReview(BaseModel):
