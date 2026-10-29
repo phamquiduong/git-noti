@@ -53,11 +53,11 @@ class DiscordNotification(NotificationProvider):
 
     @override
     def _build_message_issue_comment(self, event: EventIssueComment) -> str | None:
-        if event.pull_request is None:
+        if event.issue.pull_request is None:
             return
 
         sender_msg = self._build_sender_message(event.sender)
-        pr_msg = self._build_pull_request_message(event.pull_request)
+        pr_msg = self._build_pull_request_message(event.issue.pull_request)
         return f"💬  {sender_msg} [commented]({event.comment.html_url}) on {pr_msg}"
 
     @override

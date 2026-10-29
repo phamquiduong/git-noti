@@ -42,7 +42,11 @@ class PullRequestReview(BaseModel):
     html_url: str
 
 
-class IssueComment(BaseModel):
+class Issue(BaseModel):
+    pull_request: PullRequest | None = None
+
+
+class Comment(BaseModel):
     html_url: str
 
 
@@ -60,9 +64,9 @@ class EventPullRequestReview(BaseModel):
 
 
 class EventIssueComment(BaseModel):
-    pull_request: PullRequest | None = None
     sender: Sender
-    comment: IssueComment
+    issue: Issue
+    comment: Comment
 
 
 GithubEventType = EventPullRequest | EventPullRequestReview | EventIssueComment
