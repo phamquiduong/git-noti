@@ -46,10 +46,15 @@ async def github_webhook(
         return {"status": "failure", "delivery": delivery}
     _logger.info("GitHub webhook verified")
 
-    webhook_event = webhook.parse_payload()
-    _logger.info("Webhook event: %s", webhook_event)
+    try:
+        webhook_event = webhook.parse_payload()
+        _logger.info("Webhook event: %s", webhook_event)
+    except Exception:
+        _logger.exception("Failed to parse webhook payload")
+        raise
 
     # Send message
     _notification.send(webhook_event)
+    _logger.info("Message sent")
 
     return {"status": "success", "delivery": delivery}
