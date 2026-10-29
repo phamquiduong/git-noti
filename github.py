@@ -16,6 +16,7 @@ class GitHubWebhook:
         self.payload = json.loads(body)
         self.signature = signature
         self._verify_signature()
+        _logger.info("Payload: %s", self.payload)
 
     ###########################################################
     #               Build message function
@@ -59,7 +60,6 @@ class GitHubWebhook:
             return self._format_message(NotificationMessage.REVIEW_CHANGES_REQUESTED, user, pr)
 
         if state == GitHubReviewState.COMMENTED:
-            _logger.info("Comment: '%s'", self.payload["comment"]["body"])
             return self._format_message(NotificationMessage.REVIEW_COMMENTED, user, pr)
 
         return None
