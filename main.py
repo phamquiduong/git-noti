@@ -47,6 +47,7 @@ async def github_webhook(
     _logger.info("GitHub webhook verified")
 
     webhook_event = webhook.parse_payload()
+    _logger.info("Webhook event: %s", webhook_event)
 
     # Send message
     _notification.send(webhook_event)
