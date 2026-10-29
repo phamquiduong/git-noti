@@ -1,94 +1,37 @@
 import hashlib
 import hmac
-import json
 import logging
 
-from consts import GitHubAction, GitHubEvent, GitHubReviewState, NotificationMessage
+from const import GitHubEvent
+from schemas import EventIssueComment, EventPullRequest, EventPullRequestReview, GithubEventType
 
 _logger = logging.getLogger(__name__)
 
 
 class GitHubWebhook:
-    def __init__(self, secret: str, body: bytes, signature: str | None, event: str | None) -> None:
-        self.secret = secret
-        self.body = body
-        self.event = event
-        self.payload = json.loads(body)
-        self.signature = signature
-        self._verify_signature()
-        _logger.info("Payload: %s", self.payload)
+    def __init__(self, secret: str, body: bytes, signature: str | None, event: GitHubEvent) -> None:
+        self._secret = secret
+        self._body = body
+        self._event = event
+        self._signature = signature
 
-    ###########################################################
-    #               Build message function
-    ###########################################################
-    def build_message(self) -> str | None:
-        if self.event == GitHubEvent.PULL_REQUEST:
-            return self._pull_request()
+    def verify_signature(self) -> bool:
+        if not self._secret or not self._signature:
+            _logger.error("Missing webhook secret or signature")
+            return False
 
-        if self.event == GitHubEvent.PULL_REQUEST_REVIEW:
-            return self._pull_request_review()
+        expected = f"sha256={hmac.new(self._secret.encode('utf-8'), self._body, hashlib.sha256).hexdigest()}"
+        if hmac.compare_digest(self._signature, expected):
+            return True
 
-        if self.event == GitHubEvent.ISSUE_COMMENT:
-            return self._issue_comment()
+        _logger.error("Invalid webhook signature")
+        return False
 
-        return None
+    def parse_payload(self) -> GithubEventType:
+        if self._event == GitHubEvent.PULL_REQUEST:
+            return EventPullRequest.model_validate_json(self._body)
 
-    def _pull_request(self) -> str | None:
-        pr, user, action = self.payload["pull_request"], self.payload["sender"], self.payload["action"]
-        _logger.info("Action: %s", action)
+        if self._event == GitHubEvent.PULL_REQUEST_REVIEW:
+            return EventPullRequestReview.model_validate_json(self._body)
 
-        if action == GitHubAction.OPENED:
-            return self._format_message(NotificationMessage.PR_OPENED, user, pr)
-
-        if action == GitHubAction.CLOSED:
-            template = NotificationMessage.PR_MERGED if pr["merged"] else NotificationMessage.PR_CLOSED
-            return self._format_message(template, user, pr)
-
-        return None
-
-    def _pull_request_review(self) -> str | None:
-        action = self.payload["action"]
-        review = self.payload["review"]
-        state = review["state"]
-        user = review.get("user") or self.payload["sender"]
-        pr = self.payload["pull_request"]
-        _logger.info("State: %s", state)
-
-        if action != GitHubAction.SUBMITTED:
-            return None
-
-        if state == GitHubReviewState.APPROVED:
-            return self._format_message(NotificationMessage.REVIEW_APPROVED, user, pr)
-
-        if state == GitHubReviewState.CHANGES_REQUESTED:
-            return self._format_message(NotificationMessage.REVIEW_CHANGES_REQUESTED, user, pr)
-
-        if state == GitHubReviewState.COMMENTED:
-            return self._format_message(NotificationMessage.REVIEW_COMMENTED, user, pr)
-
-        return None
-
-    def _issue_comment(self) -> str | None:
-        issue, comment = self.payload["issue"], self.payload["comment"]
-        user = comment["user"]
-
-        if issue.get("pull_request"):
-            return self._format_message(NotificationMessage.PR_COMMENTED, user, issue)
-
-        return None
-
-    ###########################################################
-    #                       Utils
-    ###########################################################
-    def _verify_signature(self) -> None:
-        if not self.secret or not self.signature:
-            raise ValueError("Missing webhook secret or signature")
-
-        expected = f"sha256={hmac.new(self.secret.encode('utf-8'), self.body, hashlib.sha256).hexdigest()}"
-
-        if not hmac.compare_digest(self.signature, expected):
-            raise ValueError("Invalid webhook signature")
-
-    @staticmethod
-    def _format_message(template: NotificationMessage, user: dict, pr: dict) -> str:
-        return template.format(user=user["login"], number=pr["number"], title=pr["title"], url=pr["html_url"])
+        return EventIssueComment.model_validate_json(self._body)

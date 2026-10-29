@@ -2,8 +2,10 @@ import logging
 
 from fastapi import FastAPI, Header, Request
 
+from const import GitHubEvent
 from github import GitHubWebhook
-from notification import DiscordNotification, Notification
+from notification.base import Notification
+from notification.discord import DiscordNotification
 from settings import DISCORD_WEBHOOK_URL, GITHUB_WEBHOOK_SECRET, setup_logging
 
 setup_logging()
@@ -28,16 +30,25 @@ async def github_webhook(
     event: str | None = Header(default=None, alias="X-GitHub-Event"),
     delivery: str | None = Header(default=None, alias="X-GitHub-Delivery"),
 ) -> dict:
-    body = await request.body()
     _logger.info("GitHub webhook received: event=%s delivery=%s", event, delivery)
 
+    # Not process unsupported event
+    try:
+        event = GitHubEvent(event)
+    except ValueError:
+        return {"status": "bypass", "delivery": delivery}
+
+    body = await request.body()
     webhook = GitHubWebhook(secret=GITHUB_WEBHOOK_SECRET, body=body, signature=signature, event=event)
+
+    # Verify Github signature
+    if not webhook.verify_signature():
+        return {"status": "failure", "delivery": delivery}
     _logger.info("GitHub webhook verified")
 
-    message = webhook.build_message()
+    webhook_event = webhook.parse_payload()
 
-    if message:
-        _notification.send_message(message)
-        _logger.info("Notification sent")
+    # Send message
+    _notification.send(webhook_event)
 
     return {"status": "success", "delivery": delivery}
