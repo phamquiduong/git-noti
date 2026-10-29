@@ -64,23 +64,24 @@ class NotificationProvider(ABC):
         comment_msg = self._build_comment_message(event.comment)
         return f"💬  {sender_msg} {comment_msg} {issue_msg}"
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _build_sender_message(sender: Sender) -> str: ...
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _build_pull_request_message(pull_request: PullRequest) -> str: ...
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _build_issue_message(issue: Issue) -> str: ...
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def _build_review_message(action: str, review: PullRequestReview) -> str: ...
-    @abstractmethod
+
     @staticmethod
+    @abstractmethod
     def _build_comment_message(comment: Comment) -> str: ...
 
     @abstractmethod
