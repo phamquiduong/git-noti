@@ -6,13 +6,15 @@ from const import GitHubEvent
 from github import GitHubWebhook
 from notification.base import Notification
 from notification.discord import DiscordNotification
-from settings import DISCORD_WEBHOOK_URL, GITHUB_WEBHOOK_SECRET, setup_logging
+from notification.telegram import TelegramNotification
+from settings import BOT_TOKEN, CHAT_ID, DISCORD_WEBHOOK_URL, GITHUB_WEBHOOK_SECRET, setup_logging
 
 setup_logging()
 _logger = logging.getLogger(__name__)
 
 _notification = Notification(
     DiscordNotification(DISCORD_WEBHOOK_URL),
+    TelegramNotification(BOT_TOKEN, CHAT_ID),
 )
 
 app = FastAPI()

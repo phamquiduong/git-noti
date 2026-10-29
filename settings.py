@@ -10,4 +10,8 @@ def setup_logging() -> None:
 
 
 GITHUB_WEBHOOK_SECRET = os.environ["GITHUB_WEBHOOK_SECRET"]
+
 DISCORD_WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
+
+BOT_TOKEN = os.environ["BOT_TOKEN"]
+CHAT_ID = os.environ["CHAT_ID"]
