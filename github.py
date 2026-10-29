@@ -47,11 +47,15 @@ class GitHubWebhook:
         return None
 
     def _pull_request_review(self) -> str | None:
+        action = self.payload["action"]
         review = self.payload["review"]
         state = review["state"]
         user = review.get("user") or self.payload["sender"]
         pr = self.payload["pull_request"]
         _logger.info("State: %s", state)
+
+        if action != GitHubAction.SUBMITTED:
+            return None
 
         if state == GitHubReviewState.APPROVED:
             return self._format_message(NotificationMessage.REVIEW_APPROVED, user, pr)
