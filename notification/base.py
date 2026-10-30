@@ -1,16 +1,18 @@
 from abc import ABC, abstractmethod
 
-from github.const import GitHubAction, GitHubReviewState
+from github.const import GitHubAction, GitHubReviewState, WorkFlowRunConclusion
 from github.schemas import (
     Comment,
     EventIssueComment,
     EventPullRequest,
     EventPullRequestReview,
+    EventWorkFlowRun,
     GithubEventType,
     Issue,
     PullRequest,
     PullRequestReview,
     Sender,
+    WorkFlowRun,
 )
 
 
@@ -24,6 +26,9 @@ class NotificationProvider(ABC):
 
         if isinstance(event, EventIssueComment):
             return self._build_message_issue_comment(event)
+
+        if isinstance(event, EventWorkFlowRun):
+            return self._build_message_workflow_run(event)
 
     def _build_message_pull_request(self, event: EventPullRequest) -> str | None:
         sender_msg = self._build_sender_message(event.sender)
@@ -64,6 +69,18 @@ class NotificationProvider(ABC):
         comment_msg = self._build_comment_message(event.comment)
         return f"💬  {sender_msg} {comment_msg} on {issue_msg}"
 
+    def _build_message_workflow_run(self, event: EventWorkFlowRun) -> str | None:
+        if event.action != GitHubAction.COMPLETED:
+            return
+
+        workflow_run = self._build_workflow_run_message(event.workflow_run)
+
+        if event.workflow_run.conclusion == WorkFlowRunConclusion.SUCCESS:
+            return f"🚀  {workflow_run} run success"
+
+        if event.workflow_run.conclusion == WorkFlowRunConclusion.FAILURE:
+            return f"❌  {workflow_run} run failure"
+
     @staticmethod
     @abstractmethod
     def _build_sender_message(sender: Sender) -> str: ...
@@ -83,6 +100,10 @@ class NotificationProvider(ABC):
     @staticmethod
     @abstractmethod
     def _build_comment_message(comment: Comment) -> str: ...
+
+    @staticmethod
+    @abstractmethod
+    def _build_workflow_run_message(workflow_run: WorkFlowRun) -> str: ...
 
     @abstractmethod
     def send(self, message: str) -> None: ...

@@ -3,7 +3,13 @@ import hmac
 import logging
 
 from github.const import GitHubEvent
-from github.schemas import EventIssueComment, EventPullRequest, EventPullRequestReview, GithubEventType
+from github.schemas import (
+    EventIssueComment,
+    EventPullRequest,
+    EventPullRequestReview,
+    EventWorkFlowRun,
+    GithubEventType,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -34,4 +40,7 @@ class GitHubWebhook:
         if self._event == GitHubEvent.PULL_REQUEST_REVIEW:
             return EventPullRequestReview.model_validate_json(self._body)
 
-        return EventIssueComment.model_validate_json(self._body)
+        if self._event == GitHubEvent.ISSUE_COMMENT:
+            return EventIssueComment.model_validate_json(self._body)
+
+        return EventWorkFlowRun.model_validate_json(self._body)

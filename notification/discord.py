@@ -3,7 +3,7 @@ from typing import override
 
 import httpx
 
-from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender
+from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender, WorkFlowRun
 from notification.base import NotificationProvider
 
 _logger = logging.getLogger(__name__)
@@ -32,6 +32,10 @@ class DiscordNotification(NotificationProvider):
     @staticmethod
     def _build_comment_message(comment: Comment) -> str:
         return f"[commented]({comment.html_url})"
+
+    @staticmethod
+    def _build_workflow_run_message(workflow_run: WorkFlowRun) -> str:
+        return f"[Workflow - {workflow_run.name}]({workflow_run.html_url})"
 
     @override
     def send(self, message: str) -> None:

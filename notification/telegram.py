@@ -3,7 +3,7 @@ from typing import override
 
 import httpx
 
-from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender
+from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender, WorkFlowRun
 from notification.base import NotificationProvider
 
 _logger = logging.getLogger(__name__)
@@ -33,6 +33,10 @@ class TelegramNotification(NotificationProvider):
     @staticmethod
     def _build_comment_message(comment: Comment) -> str:
         return f'<a href="{comment.html_url}">commented</a>'
+
+    @staticmethod
+    def _build_workflow_run_message(workflow_run: WorkFlowRun) -> str:
+        return f'<a href="{workflow_run.html_url}">[Workflow - {workflow_run.name}]</a>'
 
     @override
     def send(self, message: str) -> None:

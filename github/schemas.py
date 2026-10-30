@@ -3,7 +3,7 @@ import logging
 import httpx
 from pydantic import BaseModel, ValidationError
 
-from github.const import GitHubAction, GitHubReviewState
+from github.const import GitHubAction, GitHubReviewState, WorkFlowRunConclusion
 
 _logger = logging.getLogger(__name__)
 
@@ -52,6 +52,12 @@ class Comment(BaseModel):
     html_url: str
 
 
+class WorkFlowRun(BaseModel):
+    conclusion: WorkFlowRunConclusion | str
+    html_url: str
+    name: str
+
+
 class EventPullRequest(BaseModel):
     action: GitHubAction | str
     pull_request: PullRequest
@@ -71,4 +77,9 @@ class EventIssueComment(BaseModel):
     comment: Comment
 
 
-GithubEventType = EventPullRequest | EventPullRequestReview | EventIssueComment
+class EventWorkFlowRun(BaseModel):
+    action: GitHubAction | str
+    workflow_run: WorkFlowRun
+
+
+GithubEventType = EventPullRequest | EventPullRequestReview | EventIssueComment | EventWorkFlowRun
