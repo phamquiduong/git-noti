@@ -43,4 +43,5 @@
 > - Issue comments
 > - Pull request reviews
 > - Pull requests
+> - Workflow runs
 > ```
