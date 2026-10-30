@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from const import GitHubAction, GitHubReviewState
-from schemas import (
+from github.const import GitHubAction, GitHubReviewState
+from github.schemas import (
     Comment,
     EventIssueComment,
     EventPullRequest,

@@ -3,8 +3,8 @@ from typing import override
 
 import httpx
 
+from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender
 from notification.base import NotificationProvider
-from schemas import Comment, Issue, PullRequest, PullRequestReview, Sender
 
 _logger = logging.getLogger(__name__)
 

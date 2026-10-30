@@ -2,8 +2,8 @@ import logging
 
 from fastapi import FastAPI, Header, Request
 
-from const import GitHubEvent
-from github import GitHubWebhook
+from github.const import GitHubEvent
+from github.webhook import GitHubWebhook
 from notification.base import Notification
 from notification.discord import DiscordNotification
 from notification.telegram import TelegramNotification

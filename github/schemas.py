@@ -3,7 +3,7 @@ import logging
 import httpx
 from pydantic import BaseModel, ValidationError
 
-from const import GitHubAction, GitHubReviewState
+from github.const import GitHubAction, GitHubReviewState
 
 _logger = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ import hashlib
 import hmac
 import logging
 
-from const import GitHubEvent
-from schemas import EventIssueComment, EventPullRequest, EventPullRequestReview, GithubEventType
+from github.const import GitHubEvent
+from github.schemas import EventIssueComment, EventPullRequest, EventPullRequestReview, GithubEventType
 
 _logger = logging.getLogger(__name__)
 
