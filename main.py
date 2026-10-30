@@ -35,22 +35,17 @@ async def github_webhook(
     _logger.info("GitHub webhook received: event=%s delivery=%s", event, delivery)
 
     # Not process unsupported event
-    try:
-        event = GitHubEvent(event)
-    except ValueError:
-        return {"status": "bypass", "delivery": delivery}
+    event = GitHubEvent(event)
 
     body = await request.body()
     webhook = GitHubWebhook(secret=GITHUB_WEBHOOK_SECRET, body=body, signature=signature, event=event)
 
     # Verify Github signature
-    if not webhook.verify_signature():
-        return {"status": "failure", "delivery": delivery}
+    webhook.verify_signature()
     _logger.info("GitHub webhook verified")
 
     try:
         webhook_event = webhook.parse_payload()
-        _logger.info("Webhook event: %s", webhook_event)
     except Exception:
         _logger.exception("Failed to parse webhook payload")
         raise

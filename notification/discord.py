@@ -3,7 +3,6 @@ from typing import override
 
 import httpx
 
-from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender, WorkFlowRun
 from notification.base import NotificationProvider
 
 _logger = logging.getLogger(__name__)
@@ -14,28 +13,8 @@ class DiscordNotification(NotificationProvider):
         self._discord_webhook_url = discord_webhook_url
 
     @staticmethod
-    def _build_sender_message(sender: Sender) -> str:
-        return f"[{sender.get_display_name()}]({sender.html_url})"
-
-    @staticmethod
-    def _build_pull_request_message(pull_request: PullRequest) -> str:
-        return f"[PR#{pull_request.number} - {pull_request.title}]({pull_request.html_url})"
-
-    @staticmethod
-    def _build_issue_message(issue: Issue) -> str:
-        return f"[PR#{issue.number} - {issue.title}]({issue.html_url})"
-
-    @staticmethod
-    def _build_review_message(action: str, review: PullRequestReview) -> str:
-        return f"[{action}]({review.html_url})"
-
-    @staticmethod
-    def _build_comment_message(comment: Comment) -> str:
-        return f"[commented]({comment.html_url})"
-
-    @staticmethod
-    def _build_workflow_run_message(workflow_run: WorkFlowRun) -> str:
-        return f"[Workflow - {workflow_run.name}]({workflow_run.html_url})"
+    def _build_link(display: str, url: str) -> str:
+        return f"[{display}]({url})"
 
     @override
     def send(self, message: str) -> None:

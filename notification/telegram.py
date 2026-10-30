@@ -3,7 +3,6 @@ from typing import override
 
 import httpx
 
-from github.schemas import Comment, Issue, PullRequest, PullRequestReview, Sender, WorkFlowRun
 from notification.base import NotificationProvider
 
 _logger = logging.getLogger(__name__)
@@ -15,28 +14,8 @@ class TelegramNotification(NotificationProvider):
         self._chat_id = chat_id
 
     @staticmethod
-    def _build_sender_message(sender: Sender) -> str:
-        return f'<a href="{sender.html_url}">{sender.get_display_name()}</a>'
-
-    @staticmethod
-    def _build_pull_request_message(pull_request: PullRequest) -> str:
-        return f'<a href="{pull_request.html_url}">PR#{pull_request.number} - {pull_request.title}</a>'
-
-    @staticmethod
-    def _build_issue_message(issue: Issue) -> str:
-        return f'<a href="{issue.html_url}">PR#{issue.number} - {issue.title}</a>'
-
-    @staticmethod
-    def _build_review_message(action: str, review: PullRequestReview) -> str:
-        return f'<a href="{review.html_url}">{action}</a>'
-
-    @staticmethod
-    def _build_comment_message(comment: Comment) -> str:
-        return f'<a href="{comment.html_url}">commented</a>'
-
-    @staticmethod
-    def _build_workflow_run_message(workflow_run: WorkFlowRun) -> str:
-        return f'<a href="{workflow_run.html_url}">[Workflow - {workflow_run.name}]</a>'
+    def _build_link(display: str, url: str) -> str:
+        return f'<a href="{url}">{display}</a>'
 
     @override
     def send(self, message: str) -> None:

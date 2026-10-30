@@ -2,17 +2,11 @@ from abc import ABC, abstractmethod
 
 from github.const import GitHubAction, GitHubReviewState, WorkFlowRunConclusion
 from github.schemas import (
-    Comment,
     EventIssueComment,
     EventPullRequest,
     EventPullRequestReview,
     EventWorkFlowRun,
     GithubEventType,
-    Issue,
-    PullRequest,
-    PullRequestReview,
-    Sender,
-    WorkFlowRun,
 )
 
 
@@ -31,79 +25,66 @@ class NotificationProvider(ABC):
             return self._build_message_workflow_run(event)
 
     def _build_message_pull_request(self, event: EventPullRequest) -> str | None:
-        sender_msg = self._build_sender_message(event.sender)
-        pr_msg = self._build_pull_request_message(event.pull_request)
+        sender, pr, action = event.sender, event.pull_request, event.action
 
-        if event.action == GitHubAction.OPENED:
+        sender_msg = self._build_link(sender.get_display_name(), sender.html_url)
+        pr_msg = self._build_link(f"PR#{pr.number} - {pr.title}", pr.html_url)
+
+        if action == GitHubAction.OPENED:
             return f"🆕  {sender_msg} opened {pr_msg}"
 
-        if event.action == GitHubAction.CLOSED and event.pull_request.merged is True:
+        if action == GitHubAction.CLOSED and pr.merged is True:
             return f"🎉  {sender_msg} merged {pr_msg}"
 
-        if event.action == GitHubAction.CLOSED and event.pull_request.merged is False:
+        if action == GitHubAction.CLOSED and pr.merged is False:
             return f"🔒  {sender_msg} closed {pr_msg}"
 
     def _build_message_pull_request_review(self, event: EventPullRequestReview) -> str | None:
         if event.action != GitHubAction.SUBMITTED:
             return
 
-        review = event.review
-        sender_msg = self._build_sender_message(event.sender)
-        pr_msg = self._build_pull_request_message(event.pull_request)
+        review, sender, pr = event.review, event.sender, event.pull_request
+
+        sender_msg = self._build_link(sender.get_display_name(), sender.html_url)
+        pr_msg = self._build_link(f"PR#{pr.number} - {pr.title}", pr.html_url)
 
         if review.state == GitHubReviewState.APPROVED:
-            state_msg = self._build_review_message("approved", review)
-            return f"✅  {sender_msg} {state_msg} on {pr_msg}"
+            state = self._build_link("approved", review.html_url)
+            return f"✅  {sender_msg} {state} on {pr_msg}"
 
         if review.state == GitHubReviewState.CHANGES_REQUESTED:
-            state_msg = self._build_review_message("requested changes", review)
-            return f"🔄  {sender_msg} {state_msg} on {pr_msg}"
+            state = self._build_link("requested changes", review.html_url)
+            return f"🔄  {sender_msg} {state} on {pr_msg}"
 
-        if GitHubReviewState.COMMENTED:
-            state_msg = self._build_review_message("commented", review)
-            return f"💬  {sender_msg} {state_msg} on {pr_msg}"
+        if review.state == GitHubReviewState.COMMENTED:
+            state = self._build_link("commented", review.html_url)
+            return f"💬  {sender_msg} {state} on {pr_msg}"
 
-    def _build_message_issue_comment(self, event: EventIssueComment) -> str | None:
-        sender_msg = self._build_sender_message(event.sender)
-        issue_msg = self._build_issue_message(event.issue)
-        comment_msg = self._build_comment_message(event.comment)
+    def _build_message_issue_comment(self, event: EventIssueComment) -> str:
+        sender, issue, comment_msg = event.sender, event.issue, event.comment
+
+        sender_msg = self._build_link(sender.get_display_name(), sender.html_url)
+        issue_msg = self._build_link(f"Issue#{issue.number} - {issue.title}", issue.html_url)
+        comment_msg = self._build_link("commented", comment_msg.html_url)
+
         return f"💬  {sender_msg} {comment_msg} on {issue_msg}"
 
     def _build_message_workflow_run(self, event: EventWorkFlowRun) -> str | None:
         if event.action != GitHubAction.COMPLETED:
             return
 
-        workflow_run = self._build_workflow_run_message(event.workflow_run)
+        workflow_run = event.workflow_run
+        workflow_run_msg = self._build_link(f"Workflow - {workflow_run.name}", workflow_run.html_url)
 
-        if event.workflow_run.conclusion == WorkFlowRunConclusion.SUCCESS:
-            return f"🚀  {workflow_run} run success"
+        if workflow_run.conclusion == WorkFlowRunConclusion.SUCCESS:
+            return f"🚀  {workflow_run_msg} run success"
 
-        if event.workflow_run.conclusion == WorkFlowRunConclusion.FAILURE:
-            return f"❌  {workflow_run} run failure"
-
-    @staticmethod
-    @abstractmethod
-    def _build_sender_message(sender: Sender) -> str: ...
+        if workflow_run.conclusion == WorkFlowRunConclusion.FAILURE:
+            return f"❌  {workflow_run_msg} run failure"
 
     @staticmethod
     @abstractmethod
-    def _build_pull_request_message(pull_request: PullRequest) -> str: ...
-
-    @staticmethod
-    @abstractmethod
-    def _build_issue_message(issue: Issue) -> str: ...
-
-    @staticmethod
-    @abstractmethod
-    def _build_review_message(action: str, review: PullRequestReview) -> str: ...
-
-    @staticmethod
-    @abstractmethod
-    def _build_comment_message(comment: Comment) -> str: ...
-
-    @staticmethod
-    @abstractmethod
-    def _build_workflow_run_message(workflow_run: WorkFlowRun) -> str: ...
+    def _build_link(display: str, url: str) -> str: ...
 
     @abstractmethod
     def send(self, message: str) -> None: ...
