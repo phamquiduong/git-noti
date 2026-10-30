@@ -38,20 +38,14 @@ async def github_webhook(
     event = GitHubEvent(event)
 
     body = await request.body()
-    webhook = GitHubWebhook(secret=GITHUB_WEBHOOK_SECRET, body=body, signature=signature, event=event)
+    webhook = GitHubWebhook(secret=GITHUB_WEBHOOK_SECRET, body=body, signature=signature)
 
     # Verify Github signature
     webhook.verify_signature()
     _logger.info("GitHub webhook verified")
 
-    try:
-        webhook_event = webhook.parse_payload()
-    except Exception:
-        _logger.exception("Failed to parse webhook payload")
-        raise
-
     # Send message
-    _notification.send(webhook_event)
+    _notification.send(event, body)
     _logger.info("Message sent")
 
     return {"status": "success", "delivery": delivery}

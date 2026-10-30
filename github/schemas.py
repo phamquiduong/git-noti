@@ -80,6 +80,3 @@ class EventIssueComment(BaseModel):
 class EventWorkFlowRun(BaseModel):
     action: GitHubAction | str
     workflow_run: WorkFlowRun
-
-
-GithubEventType = EventPullRequest | EventPullRequestReview | EventIssueComment | EventWorkFlowRun
